@@ -561,3 +561,26 @@
     background: #ef4444;
     color: white;
 }
+
+
+
+
+.edit-opportunity-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border: 1px solid #6366f1;
+    border-radius: 8px;
+    background: transparent;
+    color: #a5b4fc;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.edit-opportunity-btn:hover {
+    background: #6366f1;
+    color: white;
+}
+

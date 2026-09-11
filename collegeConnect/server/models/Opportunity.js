@@ -38,6 +38,11 @@ const opportunitySchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    
+    eligibileCourses: {
+      type: [String],
+      default: []
+    },
 
     link: {
       type: String,
@@ -59,6 +64,11 @@ const opportunitySchema = new mongoose.Schema(
       default: "Student"
     },
 
+    college: {
+      type: String,
+      default: ""
+    },
+
     course: {
       type: String,
       default: ""
@@ -67,6 +77,12 @@ const opportunitySchema = new mongoose.Schema(
     year: {
       type: String,
       default: ""
+    },
+
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
     }
   },
   {

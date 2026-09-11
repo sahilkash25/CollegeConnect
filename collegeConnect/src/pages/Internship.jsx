@@ -1,267 +1,3 @@
-// // 
-
-
-
-// import { useNavigate } from "react-router-dom";
-// import "../internship.css";
-// import { useState } from "react";
-
-// function Internships() {
-//     const navigate = useNavigate();
-
-//     const [showForm, setShowForm] = useState(false)
-
-//     const internships = [
-//         {
-//             logo: "G",
-//             title: "Frontend Developer Intern",
-//             company: "GrowthTech Solutions",
-//             mode: "Remote",
-//             duration: "3 Months",
-//             stipend: "₹10K / month",
-//             skills: ["React", "JavaScript", "CSS"]
-//         },
-//         {
-//             logo: "T",
-//             title: "Software Engineering Intern",
-//             company: "TechNova Labs",
-//             mode: "Hybrid",
-//             duration: "6 Months",
-//             stipend: "₹15K / month",
-//             skills: ["Node.js", "MongoDB", "Git"]
-//         },
-//         {
-//             logo: "D",
-//             title: "Data Science Intern",
-//             company: "DataSphere AI",
-//             mode: "Remote",
-//             duration: "4 Months",
-//             stipend: "₹12K / month",
-//             skills: ["Python", "Pandas", "SQL"]
-//         },
-//         {
-//             logo: "A",
-//             title: "AI / ML Intern",
-//             company: "Artificial Labs",
-//             mode: "On-site",
-//             duration: "6 Months",
-//             stipend: "₹18K / month",
-//             skills: ["Python", "Machine Learning", "AI"]
-//         }
-//     ];
-
-//     return (
-//         <div className="internships-page">
-
-//           {showForm && (
-//     <div className="modal-overlay">
-
-//         <div className="opportunity-modal">
-
-//             <div className="modal-header">
-//                 <div>
-//                     <h2>Share an Opportunity</h2>
-//                     <p>Help another student discover an opportunity.</p>
-//                 </div>
-
-//                 <button
-//                     className="close-modal"
-//                     onClick={() => setShowForm(false)}
-//                 >
-//                     ×
-//                 </button>
-//             </div>
-
-//             <div className="opportunity-form">
-
-//                 <input
-//                     type="text"
-//                     placeholder="Opportunity Title"
-//                 />
-
-//                 <input
-//                     type="text"
-//                     placeholder="Company Name"
-//                 />
-
-//                 <select>
-//                     <option>Select Domain</option>
-//                     <option>Web Development</option>
-//                     <option>Software Development</option>
-//                     <option>Data Science</option>
-//                     <option>AI / ML</option>
-//                     <option>Cyber Security</option>
-//                 </select>
-
-//                 <select>
-//                     <option>Select Work Mode</option>
-//                     <option>Remote</option>
-//                     <option>Hybrid</option>
-//                     <option>On-site</option>
-//                 </select>
-
-//                 <div className="form-row">
-
-//                     <input
-//                         type="text"
-//                         placeholder="Duration (e.g. 3 Months)"
-//                     />
-
-//                     <input
-//                         type="text"
-//                         placeholder="Stipend (e.g. ₹10,000/month)"
-//                     />
-
-//                 </div>
-
-//                 <input
-//                     type="text"
-//                     placeholder="Eligibility (e.g. B.Tech CSE)"
-//                 />
-
-//                 <input
-//                     type="url"
-//                     placeholder="Application Link"
-//                 />
-
-//                 <input
-//                     type="date"
-//                 />
-
-//                 <textarea
-//                     placeholder="Tell other students about this opportunity..."
-//                     rows="4"
-//                 ></textarea>
-
-//                 <button className="submit-opportunity">
-//                     Share Opportunity
-//                 </button>
-
-//             </div>
-
-//         </div>
-
-//     </div>
-// )} 
-
-//             <header className="internships-header">
-//                 <div>
-//                     <h1>Internships</h1>
-//                     <p>
-//                         Discover opportunities and grow your career.
-//                     </p>
-//                 </div>
-//                 <div className="header-buttons">
-//                     <button
-//                         className="share-opportunity-btn"
-//                         onClick={() => setShowForm(true)}
-//                             >
-//                         + Share Opportunity
-//                         </button>
-
-//                         <button
-//                             className="back-btn"
-//                             onClick={() => navigate("/dashboard")}
-//                         >
-//                             ← Dashboard
-//                         </button>
-//                     </div>
-//             </header>
-
-//             <section className="internship-tools">
-
-//                 <div className="search-box">
-//                     <span>⌕</span>
-
-//                     <input
-//                         type="text"
-//                         placeholder="Search internships, skills or companies..."
-//                     />
-//                 </div>
-
-//                 <select>
-//                     <option>All Domains</option>
-//                     <option>Web Development</option>
-//                     <option>Software Development</option>
-//                     <option>Data Science</option>
-//                     <option>AI / ML</option>
-//                     <option>Cyber Security</option>
-//                 </select>
-
-//                 <select>
-//                     <option>All Work Modes</option>
-//                     <option>Remote</option>
-//                     <option>Hybrid</option>
-//                     <option>On-site</option>
-//                 </select>
-
-//             </section>
-
-//             <div className="section-heading">
-//                 <h2>Latest Internships</h2>
-//                 <span>{internships.length} opportunities</span>
-//             </div>
-
-//             <section className="internship-grid">
-
-//                 {internships.map((internship, index) => (
-
-//                     <div className="internship-card" key={index}>
-
-//                         <div className="company-logo">
-//                             {internship.logo}
-//                         </div>
-
-//                         <div className="card-content">
-
-//                             <div className="card-top">
-//                                 <span className="type">
-//                                     INTERNSHIP
-//                                 </span>
-
-//                                 <button className="save-btn">
-//                                     ♡
-//                                 </button>
-//                             </div>
-
-//                             <h3>{internship.title}</h3>
-
-//                             <p className="company">
-//                                 {internship.company}
-//                             </p>
-
-//                             <div className="meta">
-//                                 <span>◉ {internship.mode}</span>
-//                                 <span>◷ {internship.duration}</span>
-//                                 <span>💰 {internship.stipend}</span>
-//                             </div>
-
-//                             <div className="tags">
-//                                 {internship.skills.map((skill) => (
-//                                     <span key={skill}>
-//                                         {skill}
-//                                     </span>
-//                                 ))}
-//                             </div>
-
-//                             <button className="view-btn">
-//                                 View Opportunity →
-//                             </button>
-
-//                         </div>
-
-//                     </div>
-
-//                 ))}
-
-//             </section>
-
-//         </div>
-//     );
-// }
-
-// export default Internships;
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../internship.css";
@@ -271,12 +7,29 @@ function Internships() {
 
     const [showForm, setShowForm] = useState(false);
 
+    const [editingOpportunity, setEditingOpportunity] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+
     const [opportunities, setOpportunities] = useState([]);
+    // const [applicationStatus, setApplicationStatus] = useState({})
+    const [searchTerm, setSearchTerm] = useState("");
+    const [domainFilter, setDomainFilter] = useState("All Domains");
+    const [modeFilter, setModeFilter] = useState("All Work Modes");
 useEffect(() => {
+
+    const storedUser = localStorage.getItem("user");
+
+            if (!storedUser) {
+                return;
+            }
+    const user  = JSON.parse(storedUser); 
+    
+    setCurrentUser(user);
+
     const fetchOpportunities = async () => {
         try {
             const response = await fetch(
-                "http://localhost:5000/api/opportunities"
+                `http://localhost:5000/api/opportunities?course=${encodeURIComponent(user.course)}`
             );
 
             const data = await response.json();
@@ -300,6 +53,7 @@ useEffect(() => {
         duration: "",
         stipend: "",
         eligibility: "",
+        eligibleCourses: "",
         link: "",
         deadline: "",
         description: ""
@@ -310,6 +64,8 @@ useEffect(() => {
             logo: "G",
             title: "Frontend Developer Intern",
             company: "GrowthTech Solutions",
+            domain: "Web Development",
+            eligibleCourse: ["BCA", "B.Tech" ],
             mode: "Remote",
             duration: "3 Months",
             stipend: "₹10K / month",
@@ -319,6 +75,8 @@ useEffect(() => {
             logo: "T",
             title: "Software Engineering Intern",
             company: "TechNova Labs",
+            domain: "Software Development",
+            eligibleCourse: ["BCA", "B.Tech" ],
             mode: "Hybrid",
             duration: "6 Months",
             stipend: "₹15K / month",
@@ -328,6 +86,8 @@ useEffect(() => {
             logo: "D",
             title: "Data Science Intern",
             company: "DataSphere AI",
+            domain: "Data Science",
+            eligibleCourse: ["BCA", "B.Tech" ],
             mode: "Remote",
             duration: "4 Months",
             stipend: "₹12K / month",
@@ -337,12 +97,77 @@ useEffect(() => {
             logo: "A",
             title: "AI / ML Intern",
             company: "Artificial Labs",
+            domain: "AI / ML",
+            eligibleCourse: [ "B.Tech" ],
             mode: "On-site",
             duration: "6 Months",
             stipend: "₹18K / month",
             skills: ["Python", "Machine Learning", "AI"]
+        },
+        {
+            logo: "L",
+            title: "Legal Research Intern",
+            company: "LexCore Legal",
+            domain: "Law",
+            eligibleCourses: ["Law"],
+            mode: "Hybrid",
+            duration: "3 Months",
+            stipend: "₹8K / month",
+            skills: ["Legal Research", "Case Analysis", "Legal Writing"]
+
         }
     ];
+    const filteredOpportunities = opportunities.filter((opportunity) => {
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch =
+        opportunity.title?.toLowerCase().includes(search) ||
+        opportunity.company?.toLowerCase().includes(search) ||
+        opportunity.domain?.toLowerCase().includes(search) ||
+        opportunity.course?.toLowerCase().includes(search);
+
+    const matchesDomain =
+        domainFilter === "All Domains" ||
+        opportunity.domain === domainFilter;
+
+    const matchesMode =
+        modeFilter === "All Work Modes" ||
+        opportunity.mode === modeFilter;
+
+    return matchesSearch && matchesDomain && matchesMode;
+});
+
+const filteredInternships = internships.filter((internship) => {
+  const search = searchTerm.toLowerCase();
+
+  const matchesSearch =
+    internship.title?.toLowerCase().includes(search) ||
+    internship.company?.toLowerCase().includes(search) ||
+    internship.domain?.toLowerCase().includes(search) ||
+    internship.skills?.some((skill) =>
+      skill.toLowerCase().includes(search)
+    );
+
+  const matchesDomain =
+    domainFilter === "All Domains" ||
+    internship.domain === domainFilter;
+
+  const matchesMode =
+    modeFilter === "All Work Modes" ||
+    internship.mode === modeFilter;
+
+ const matchesCourse = 
+    !currentUser?.course ||
+    internship.eligibleCourse?.includes(currentUser.course);
+    // console.log(
+    // internship.title,
+    // internship.eligibleCourses,
+    // currentUser?.course,
+    // internship.eligibleCourses?.includes(currentUser?.course)
+
+
+  return matchesSearch && matchesDomain && matchesMode && matchesCourse;
+});
 
     const handleChange = (e) => {
         setForm({
@@ -351,7 +176,8 @@ useEffect(() => {
         });
     };
 
-    const handleSubmit = async (e) => {
+
+const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (
@@ -365,34 +191,96 @@ useEffect(() => {
         return;
     }
 
+    const user = JSON.parse(localStorage.getItem("user"));
+    // console.log("USER BEFORE SHARING:", user);
+    // console.log("COLLEGE BEFORE SHARING:", user?.college);
+
+    if (!user || !user.id) {
+        alert("Please login again.");
+        return;
+    }
+
     try {
-        const response = await fetch(
-            "http://localhost:5000/api/opportunities",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ...form,
-                    studentName: "You",
-                    course: "B.Tech CSE",
-                    year: "Student"
-                })
+        // EDIT EXISTING OPPORTUNITY
+        if (editingOpportunity) {
+            const response = await fetch(
+                `http://localhost:5000/api/opportunities/${editingOpportunity._id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        ...form,
+                        eligibleCourses: form.eligibleCourses
+                            .split(",")
+                            .map((course) => course.trim())
+                            .filter(Boolean),
+                        studentName: user.name,
+                        college: user.college,
+                        course: user.course,
+                        year: user.year,
+                        userId: user.id
+                    })
+                }
+            );
+
+            const data = await response.json();
+            console.log("OPPORTUNITY RESPONSE:", data);
+            console.log("SAVED COLLEGE:", data.opportunity?.college);
+            if (!response.ok) {
+                alert(data.message || "Failed to update opportunity");
+                return;
             }
-        );
 
-        const data = await response.json();
+            setOpportunities((prev) =>
+                prev.map((opportunity) =>
+                    opportunity._id === editingOpportunity._id
+                        ? data.opportunity
+                        : opportunity
+                )
+            );
 
-        if (!response.ok) {
-            alert(data.message || "Failed to share opportunity");
-            return;
+            alert("Opportunity updated successfully! ✅");
+
+        } else {
+            // CREATE NEW OPPORTUNITY
+            const response = await fetch(
+                "http://localhost:5000/api/opportunities",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        ...form,
+                        eligibleCourses: form.eligibleCourses
+                        .split(",")
+                        .map((course) => course.trim())
+                        .filter(Boolean),
+                        studentName: user.name,
+                        college: user.college,
+                        course: user.course,
+                        year: user.year,
+                        userId: user.id
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message || "Failed to share opportunity");
+                return;
+            }
+
+            setOpportunities((prev) => [
+                data.opportunity,
+                ...prev
+            ]);
+
+            alert("Opportunity shared successfully! 🎉");
         }
-
-        setOpportunities((prev) => [
-            data.opportunity,
-            ...prev
-        ]);
 
         setForm({
             title: "",
@@ -402,21 +290,18 @@ useEffect(() => {
             duration: "",
             stipend: "",
             eligibility: "",
+            eligibleCourses: "",
             link: "",
             deadline: "",
             description: ""
         });
 
+        setEditingOpportunity(null);
         setShowForm(false);
 
-        alert("Opportunity shared successfully! 🎉");
-
     } catch (error) {
-        console.error("SHARE OPPORTUNITY ERROR:", error);
-
-        alert(
-            "Unable to connect to server. Please make sure backend is running."
-        );
+        console.error("OPPORTUNITY ERROR:", error);
+        alert("Unable to connect to server.");
     }
 };
 
@@ -427,11 +312,21 @@ const handleDelete = async (id) => {
 
     if (!confirmDelete) return;
 
+        const user = JSON.parse(localStorage.getItem("user"));
+        // console.log("CURRENT USER:", user);
+
+
     try {
         const response = await fetch(
             `http://localhost:5000/api/opportunities/${id}`,
             {
-                method: "DELETE"
+               method: "DELETE",
+                headers: {
+                "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                     userId: user.id
+                })
             }
         );
 
@@ -453,6 +348,29 @@ const handleDelete = async (id) => {
         alert("Unable to connect to server.");
     }
 };
+
+
+const handleEdit = (opportunity) => {
+    setEditingOpportunity(opportunity);
+
+    setForm({
+        title: opportunity.title || "",
+        company: opportunity.company || "",
+        domain: opportunity.domain || "",
+        mode: opportunity.mode || "",
+        duration: opportunity.duration || "",
+        stipend: opportunity.stipend || "",
+        eligibility: opportunity.eligibility || "",
+        eligibleCourse: opportunity.eligibleCourse?.join(", ") || "",
+        link: opportunity.link || "",
+        deadline: opportunity.deadline || "",
+        description: opportunity.description || ""
+    });
+
+    setShowForm(true);
+};
+
+
 
     return (
         <div className="internships-page">
@@ -501,20 +419,25 @@ const handleDelete = async (id) => {
                     <input
                         type="text"
                         placeholder="Search internships, skills or companies..."
+                        value={searchTerm}
+                        onChange = {(e) =>setSearchTerm(e.target.value) }
                     />
 
                 </div>
 
-                <select>
+                <select value = {domainFilter}
+                onChange ={(e) => setDomainFilter(e.target.value)}>
                     <option>All Domains</option>
                     <option>Web Development</option>
                     <option>Software Development</option>
                     <option>Data Science</option>
                     <option>AI / ML</option>
                     <option>Cyber Security</option>
+                    <option>Law</option>
                 </select>
 
-                <select>
+                <select value = {modeFilter}
+                onChange = {(e) => setModeFilter(e.target.value)}>
                     <option>All Work Modes</option>
                     <option>Remote</option>
                     <option>Hybrid</option>
@@ -531,7 +454,7 @@ const handleDelete = async (id) => {
                 <h2>Latest Internships</h2>
 
                 <span>
-                    {internships.length} opportunities
+                    {filteredInternships.length} internships
                 </span>
 
             </div>
@@ -539,7 +462,7 @@ const handleDelete = async (id) => {
 
             <section className="internship-grid">
 
-                {internships.map((internship, index) => (
+                {filteredInternships.map((internship, index) => (
 
                     <div
                         className="internship-card"
@@ -632,7 +555,7 @@ const handleDelete = async (id) => {
                         </div>
 
                         <span>
-                            {opportunities.length} shared
+                            {filteredOpportunities.length} shared
                         </span>
 
                     </div>
@@ -640,12 +563,12 @@ const handleDelete = async (id) => {
 
                     <div className="shared-opportunity-grid">
 
-                        {opportunities.map(
+                        {filteredOpportunities.map(
                             (opportunity) => (
 
                                 <div
                                     className="shared-opportunity-card"
-                                    key={opportunity.id}
+                                    key={opportunity._id}
                                 >
 
                                     <div className="shared-card-top">
@@ -658,6 +581,10 @@ const handleDelete = async (id) => {
                                             <strong>
                                                 {opportunity.studentName}
                                             </strong>
+
+                                            <p>
+                                                {opportunity.college || "College not Specified"}
+                                            </p>
 
                                             <p>
                                                 {opportunity.course}
@@ -727,12 +654,63 @@ const handleDelete = async (id) => {
                                     >
                                         View Opportunity →
                                     </a>
-                                    <button
+                                 {/* <div className="application-status">
+                                    <label>Application Status:</label>
+
+                                    <select
+                                        value={applicationStatus[opportunity._id] || "Not Applied"}
+                                        onChange={(e) =>
+                                        setApplicationStatus({
+                                            ...applicationStatus,
+                                        [opportunity._id]: e.target.value
+                                        })
+                                        }
+                                    >
+                                        <option>Not Applied</option>
+                                        <option>Saved</option>
+                                        <option>Applied</option>
+                                        <option>Interview</option>
+                                        <option>Selected</option>
+                                        <option>Rejected</option>
+                                    </select>
+                                </div>    */}
+                                    {/* <button
                                         className="delete-opportunity-btn"
                                         onClick={() => handleDelete(opportunity._id)}
                                         >
                                         🗑 Delete Opportunity
                                     </button>
+
+                                    <button
+                                        className="edit-opportunity-btn"
+                                        onClick={() => handleEdit(opportunity)}
+>
+                                        ✏️ Edit Opportunity
+                                    </button> */}
+
+
+                                {String(currentUser?.id) === String(opportunity.userId) && (
+                                    <>
+                                        <button
+                                            className="edit-opportunity-btn"
+                                            onClick={() => handleEdit(opportunity)}
+                                        >
+                                            ✏️ Edit Opportunity
+                                        </button>
+
+                                        <button
+                                            className="delete-opportunity-btn"
+                                            onClick={() => handleDelete(opportunity._id)}
+                                        >
+                                            🗑 Delete Opportunity
+                                        </button>
+                                    </>
+                                )}
+
+
+
+
+                                
 
                                 </div>
 
@@ -759,11 +737,18 @@ const handleDelete = async (id) => {
                             <div>
 
                                 <h2>
-                                    Share an Opportunity
+                                    {
+                                        editingOpportunity
+                                        ? "Edit Opportunity"
+                                        : "Share an Opportunity"
+                                    }
                                 </h2>
 
                                 <p>
-                                    Help another student discover an opportunity.
+                                    {editingOpportunity
+                                    ? "Update the details of your opportunity."
+                                    : "Help another student discover an opportunity."
+                                }
                                 </p>
 
                             </div>
@@ -886,6 +871,14 @@ const handleDelete = async (id) => {
                                 placeholder="Eligibility"
                             />
 
+                            <input
+                                type="text"
+                                name="eligibleCourses"
+                                value={form.eligibleCourses}
+                                onChange={handleChange}
+                                placeholder="Eligible Courses (e.g.BCA, B.Tech, Law)"
+                            />
+
 
                             <input
                                 type="url"
@@ -917,7 +910,8 @@ const handleDelete = async (id) => {
                                 type="submit"
                                 className="submit-opportunity"
                             >
-                                Share Opportunity
+                                {editingOpportunity ? "Update Opportunity" 
+                                : "Share Opportunity"}
                             </button>
 
                         </form>

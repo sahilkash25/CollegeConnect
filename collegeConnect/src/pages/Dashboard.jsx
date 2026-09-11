@@ -37,7 +37,7 @@ function Dashboard() {
                         My Profile
                     </button>
 
-                    <button className="menu-item">
+                    <button className="menu-item" onClick={() => navigate("/Internship")}>
                         <span>◈</span>
                         Internships
                     </button>

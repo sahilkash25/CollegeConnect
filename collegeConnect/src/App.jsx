@@ -4,6 +4,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Internship from "./pages/Internship";
+import Guidance from "./pages/Guidance";
 
 function LandingPage() {
 
@@ -166,6 +167,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/Profile" element={<Profile />} />
         <Route path="/internship" element={<Internship />} />
+        <Route path="/guidance" element={<Guidance />} />
         {/* Authentication */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
