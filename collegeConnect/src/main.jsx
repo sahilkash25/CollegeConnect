@@ -17,7 +17,7 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/CollegeConnect">
       <App />
     </BrowserRouter>
   </React.StrictMode>

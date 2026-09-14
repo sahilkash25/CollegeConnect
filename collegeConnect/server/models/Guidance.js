@@ -28,7 +28,7 @@ const guidanceSchema = new mongoose.Schema(
             
         },
         year: {
-            type: String,
+            type: Number,
             required: true,
             
         },

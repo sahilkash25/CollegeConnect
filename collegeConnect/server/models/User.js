@@ -37,8 +37,25 @@ const userSchema = new mongoose.Schema(
     year: {
       type: Number,
       required: true
-    }
+    },
+  
+
+    bio: { type: String, 
+    default: "" },
+
+    skills: { type: [String], 
+    default: [] },
+
+    github: { type: String, 
+    default: "" },
+
+    linkedin: { type: String,
+    default: "" },
+
+    resume: { type: String,
+    default: "" },
   },
+  
   {
     timestamps: true
   }

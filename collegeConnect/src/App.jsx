@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -11,25 +11,56 @@ function LandingPage() {
   return (
     <div className="app">
 
-      {/* Navbar */}
-      <nav className="navbar">
-        <div className="logo">
-          🎓 College<span>Connect</span>
-        </div>
+      
+        {/* Navbar */}
+        <nav className="navbar">
 
-        <div className="nav-links">
-          <a href="#features">Features</a>
-          <a href="#about">About</a>
+          <div className="logo">
+            🎓 College<span>Connect</span>
+          </div>
 
-          <a href="/login">
-            <button className="login-btn">Login</button>
-          </a>
+          {/* Desktop Navigation */}
+          <div className="nav-links">
 
-          <a href="/signup">
-            <button className="signup-btn">Sign Up</button>
-          </a>
-        </div>
-      </nav>
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+
+            <Link to="/login">
+              <button className="login-btn">Login</button>
+            </Link>
+
+            <Link to="/signup">
+              <button className="signup-btn">Sign Up</button>
+            </Link>
+
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => {
+              document
+                .querySelector(".mobile-menu")
+                .classList.toggle("show");
+            }}
+          >
+            ☰
+          </button>
+          
+          {/* Mobile Navigation */}
+          <div className="mobile-menu">
+          
+            <a href="#features">Features</a>
+          
+            <a href="#about">About</a>
+          
+            <Link to="/login">Login</Link>
+          
+            <Link to="/signup">Sign Up</Link>
+          
+          </div>
+          
+        </nav>
 
       {/* Hero Section */}
       <main className="hero">
@@ -54,11 +85,11 @@ function LandingPage() {
 
           <div className="hero-buttons">
 
-            <a href="/signup">
+            <Link to="/signup">
               <button className="primary-btn">
                 Get Started →
               </button>
-            </a>
+            </Link>
 
             <a href="#features">
               <button className="secondary-btn">

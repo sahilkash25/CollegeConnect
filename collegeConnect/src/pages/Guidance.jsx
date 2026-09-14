@@ -1,601 +1,536 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../dashboard.css";
 import "../guidance.css";
 
+// Auto detect: Agar local pe chal raha hai toh localhost, nahi toh Render URL
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://collegeconnect-cznd.onrender.com";
+
+// ==========================================
+// SMART NORMALIZERS & MATCHING HELPERS
+// ==========================================
+
+// Comma ke baad ka city/branch ignore karega ("Amity university, Patna" -> "amity university")
+const normalizeCollege = (value = "") => {
+  return value
+    .toString()
+    .split(",")[0]
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+};
+
+const normalizeCourse = (value = "") => {
+  return value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+};
+
+// Branch ignore karke core degree nikalta hai: "B.Tech (CSE)" -> "btech"
+const getCourseFamily = (value = "") => {
+  if (!value) return "";
+  let clean = value.split("(")[0].split("-")[0].trim().toLowerCase();
+  clean = clean.replace(/[^a-z0-9]/g, "");
+
+  if (
+    clean.includes("btech") ||
+    clean.includes("bacheloroftechnology") ||
+    clean === "be" ||
+    clean.startsWith("be")
+  ) {
+    return "btech";
+  }
+  if (
+    clean.includes("mtech") ||
+    clean.includes("masteroftechnology") ||
+    clean === "me" ||
+    clean.startsWith("me")
+  ) {
+    return "mtech";
+  }
+  if (clean.includes("bca")) return "bca";
+  if (clean.includes("mca")) return "mca";
+  if (clean.includes("bba")) return "bba";
+  if (clean.includes("mba")) return "mba";
+  if (clean.includes("law") || clean.includes("llb")) return "law";
+
+  return clean;
+};
+
+const coursesMatch = (courseA, courseB) => {
+  return getCourseFamily(courseA) === getCourseFamily(courseB);
+};
+
+const collegesMatch = (colA, colB) => {
+  return normalizeCollege(colA) === normalizeCollege(colB);
+};
+
 function Guidance() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [currentUser, setCurrentUser] = useState(null);
-    const [questions, setQuestions] = useState([]);
-    const [question, setQuestion] = useState("");
-    const [category, setCategory] = useState("Internship");
-    const [loading, setLoading] = useState(true);
-    const [posting, setPosting] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const [answers, setAnswers] = useState({});
-    const [answerText, setAnswerText] = useState({});
+  // Ask Question Modal State
+  const [showAskModal, setShowAskModal] = useState(false);
+  const [questionText, setQuestionText] = useState("");
+  const [submittingQuestion, setSubmittingQuestion] = useState(false);
 
-    const [searchTerm, setSearchTerm] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("All");
+  // Answers State
+  const [expandedQuestionId, setExpandedQuestionId] = useState(null);
+  const [answersMap, setAnswersMap] = useState({});
+  const [replyInputMap, setReplyInputMap] = useState({});
+  const [submittingAnswerId, setSubmittingAnswerId] = useState(null);
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) {
+      navigate("/login");
+      return;
+    }
+    const user = JSON.parse(stored);
+    setCurrentUser(user);
+    loadQuestions(user);
+  }, []);
 
-        if (!storedUser) {
-            setLoading(false);
-            return;
+  const loadQuestions = async (user) => {
+    setLoading(true);
+    try {
+      const userId = user.id || user._id;
+      const res = await fetch(
+        `${API_BASE_URL}/api/guidance?college=${encodeURIComponent(
+          user.college
+        )}&course=${encodeURIComponent(user.course)}&year=${user.year}&userId=${userId}`
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setQuestions(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to load questions:", data.message);
+      }
+    } catch (err) {
+      console.error("Error loading guidance:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle and load answers for a question
+  const handleToggleAnswers = async (questionId) => {
+    if (expandedQuestionId === questionId) {
+      setExpandedQuestionId(null);
+      return;
+    }
+
+    setExpandedQuestionId(questionId);
+
+    if (!answersMap[questionId]) {
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/guidance/${questionId}/answers`
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setAnswersMap((prev) => ({ ...prev, [questionId]: data }));
         }
+      } catch (err) {
+        console.error("Error fetching answers:", err);
+      }
+    }
+  };
 
-        const user = JSON.parse(storedUser);
+  // Submit Answer
+  const handlePostAnswer = async (questionId, question) => {
+    const answer = replyInputMap[questionId]?.trim();
+    if (!answer) {
+      alert("Please write an answer before submitting.");
+      return;
+    }
 
-        setCurrentUser(user);
-        fetchQuestions(user);
-    }, []);
+    const userId = currentUser.id || currentUser._id;
+    setSubmittingAnswerId(questionId);
 
-    const fetchQuestions = async (user) => {
-        try {
-            const response = await fetch(
-                `http://localhost:5000/api/guidance?college=${encodeURIComponent(
-                    user.college
-                )}&course=${encodeURIComponent(
-                    user.course
-                )}&year=${user.year}&userId=${user.id}`
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setQuestions(data);
-
-                data.forEach((item) => {
-                    fetchAnswers(item._id);
-                });
-            }
-        } catch (error) {
-            console.error("Failed to fetch questions:", error);
-        } finally {
-            setLoading(false);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/guidance/${questionId}/answers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answer,
+            studentName: currentUser.name,
+            college: currentUser.college,
+            course: currentUser.course,
+            year: currentUser.year,
+            userId,
+          }),
         }
-    };
+      );
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "Failed to post answer");
+        return;
+      }
 
-        if (!question.trim()) {
-            return;
-        }
+      setAnswersMap((prev) => ({
+        ...prev,
+        [questionId]: [...(prev[questionId] || []), data.answer],
+      }));
 
-        try {
-            setPosting(true);
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q._id === questionId ? { ...q, status: "Answered" } : q
+        )
+      );
 
-            const response = await fetch(
-                "http://localhost:5000/api/guidance",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        question: question.trim(),
-                        category,
-                        studentName: currentUser.name,
-                        college: currentUser.college,
-                        course: currentUser.course,
-                        year: currentUser.year,
-                        userId: currentUser.id
-                    })
-                }
-            );
+      setReplyInputMap((prev) => ({ ...prev, [questionId]: "" }));
+      alert("Answer posted successfully! ✅");
+    } catch (err) {
+      console.error("Error submitting answer:", err);
+      alert("Server error. Check connection.");
+    } finally {
+      setSubmittingAnswerId(null);
+    }
+  };
 
-            const data = await response.json();
+  // Submit Question
+  const handleAskQuestion = async (e) => {
+    e.preventDefault();
+    if (!questionText.trim()) {
+      alert("Please enter your question.");
+      return;
+    }
 
-            if (response.ok) {
-                setQuestion("");
-                setCategory("Internship");
+    const userId = currentUser.id || currentUser._id;
+    setSubmittingQuestion(true);
 
-                alert("Question posted successfully!");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/guidance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: questionText,
+          studentName: currentUser.name,
+          college: currentUser.college,
+          course: currentUser.course,
+          year: currentUser.year,
+          userId,
+        }),
+      });
 
-                fetchQuestions(currentUser);
-            } else {
-                alert(data.message || "Failed to post question");
-            }
-        } catch (error) {
-            console.error("POST QUESTION ERROR:", error);
-            alert("Something went wrong");
-        } finally {
-            setPosting(false);
-        }
-    };
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "Failed to ask question");
+        return;
+      }
 
-    const handleAnswer = async (guidanceId) => {
-        const text = answerText[guidanceId]?.trim();
+      const added = data.guidance || data.question || data;
+      setQuestions((prev) => [added, ...prev]);
+      setQuestionText("");
+      setShowAskModal(false);
+      alert("Question posted successfully! 🎉");
+    } catch (err) {
+      console.error("Error submitting question:", err);
+      alert("Unable to post question. Check server.");
+    } finally {
+      setSubmittingQuestion(false);
+    }
+  };
 
-        if (!text) {
-            alert("Please write an answer first.");
-            return;
-        }
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
-        try {
-            const response = await fetch(
-                `http://localhost:5000/api/guidance/${guidanceId}/answers`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        answer: text,
-                        studentName: currentUser.name,
-                        college: currentUser.college,
-                        course: currentUser.course,
-                        year: currentUser.year,
-                        userId: currentUser.id
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setAnswerText((prev) => ({
-                    ...prev,
-                    [guidanceId]: ""
-                }));
-
-                await fetchAnswers(guidanceId);
-                await fetchQuestions(currentUser);
-
-                alert("Answer posted successfully!");
-            } else {
-                alert(data.message || "Failed to post answer");
-            }
-        } catch (error) {
-            console.error("POST ANSWER ERROR:", error);
-            alert("Something went wrong");
-        }
-    };
-
-    const fetchAnswers = async (guidanceId) => {
-        try {
-            const response = await fetch(
-                `http://localhost:5000/api/guidance/${guidanceId}/answers`
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setAnswers((prev) => ({
-                    ...prev,
-                    [guidanceId]: data
-                }));
-            }
-        } catch (error) {
-            console.error("Failed to fetch answers:", error);
-        }
-    };
-
-    const isSenior = currentUser && Number(currentUser.year) >= 4;
-
-    const filteredQuestions = questions.filter((item) => {
-    const matchesSearch =
-        item.question
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-        item.studentName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase());
-
-    const matchesCategory =
-        categoryFilter === "All" ||
-        item.category === categoryFilter;
-
-    return matchesSearch && matchesCategory;
-});
-
+  // Filtered Questions list
+  const filteredQuestions = questions.filter((q) => {
+    const search = searchTerm.toLowerCase();
     return (
-        <div className="guidance-page">
-
-            {/* HEADER */}
-            <header className="guidance-header">
-
-                <div>
-                    <div className="guidance-eyebrow">
-                        COLLEGECONNECT • SENIOR NETWORK
-                    </div>
-
-                    <h1>
-                        {isSenior
-                            ? "Senior Guidance 🎓"
-                            : "Ask a Senior 🎓"}
-                    </h1>
-
-                    <p>
-                        {isSenior
-                            ? "Help your juniors with your experience, knowledge and advice."
-                            : "Have a question? Get genuine guidance from seniors of your college and course."}
-                    </p>
-
-                    {currentUser && (
-                        <div className="guidance-user-info">
-                            <span>{currentUser.course}</span>
-                            <span>•</span>
-                            <span>Year {currentUser.year}</span>
-                            <span>•</span>
-                            <span>{currentUser.college}</span>
-                        </div>
-                    )}
-                </div>
-
-                <button
-                    className="guidance-back-btn"
-                    onClick={() => navigate("/dashboard")}
-                >
-                    ← Dashboard
-                </button>
-
-            </header>
-
-
-            {/* ASK QUESTION */}
-            {currentUser && Number(currentUser.year) < 4 && (
-                <section className="ask-question-card">
-
-                    <div className="ask-question-heading">
-                        <div className="ask-icon">?</div>
-
-                        <div>
-                            <h2>Ask Your Senior</h2>
-                            <p>
-                                Stuck somewhere? Ask seniors who have already
-                                been through it.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="guidance-filters">
-
-                    <div className="guidance-search">
-                        <span>⌕</span>
-
-                        <input
-                            type="text"
-                            placeholder="Search questions..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    <select
-                        className="guidance-category-filter"
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                    >               
-                        <option value="All">All Categories</option>
-                        <option value="Internship">Internship</option>
-                        <option value="Placement">Placement</option>
-                        <option value="Academics">Academics</option>
-                        <option value="Projects">Projects</option>
-                        <option value="DSA">DSA</option>
-                        <option value="Resume">Resume</option>
-                        <option value="College Life">College Life</option>
-                        <option value="Other">Other</option>
-                    </select>
-
-                </div>
-
-                    <form onSubmit={handleSubmit}>
-
-                        <textarea
-                            className="guidance-textarea"
-                            placeholder="What do you want to ask your senior?"
-                            value={question}
-                            onChange={(e) =>
-                                setQuestion(e.target.value)
-                            }
-                            rows="5"
-                        />
-
-                        <div className="question-form-bottom">
-
-                            <select
-                                className="guidance-select"
-                                value={category}
-                                onChange={(e) =>
-                                    setCategory(e.target.value)
-                                }
-                            >
-                                <option>Internship</option>
-                                <option>Placement</option>
-                                <option>Academics</option>
-                                <option>Projects</option>
-                                <option>DSA</option>
-                                <option>Resume</option>
-                                <option>College Life</option>
-                                <option>Other</option>
-                            </select>
-
-                            <button
-                                type="submit"
-                                className="ask-question-btn"
-                                disabled={posting}
-                            >
-                                {posting
-                                    ? "Posting..."
-                                    : "Ask Senior →"}
-                            </button>
-
-                        </div>
-
-                    </form>
-                </section>
-            )}
-
-
-            {/* SENIOR INFO */}
-            {isSenior && (
-                <section className="senior-info-card">
-
-                    <div className="senior-info-icon">
-                        🎓
-                    </div>
-
-                    <div>
-                        <h3>You're now a Senior!</h3>
-
-                        <p>
-                            Questions from juniors in your same college
-                            and course will appear below. Share your
-                            experience and help them move forward.
-                        </p>
-                    </div>
-
-                </section>
-            )}
-
-
-            {/* QUESTIONS */}
-            <section className="questions-section">
-
-                <div className="questions-heading">
-
-                    <div>
-                        <span className="section-eyebrow">
-                            COMMUNITY GUIDANCE
-                        </span>
-
-                        <h2>
-                            {isSenior
-                                ? "Questions from Juniors"
-                                : "Your Questions"}
-                        </h2>
-                    </div>
-
-                    <span className="question-count">
-                        {filteredQuestions.length}{" "}
-                        {filteredQuestions.length === 1
-                            ? "Question"
-                            : "Questions"}
-                    </span>
-
-                </div>
-
-
-                {loading ? (
-                    <div className="guidance-empty">
-                        <div className="loading-dot">●</div>
-                        <p>Loading guidance...</p>
-                    </div>
-                ) : filteredQuestions.length === 0 ? (
-                    <div className="guidance-empty">
-
-                        <div className="empty-icon">
-                            💬
-                        </div>
-
-                        <h3>
-                            No questions yet
-                        </h3>
-
-                        <p>
-                            {isSenior
-                                ? "Your juniors haven't asked anything yet."
-                                : "Ask your first question and get guidance from a senior."}
-                        </p>
-
-                    </div>
-                ) : (
-
-                    <div className="questions-list">
-
-                        {filteredQuestions.map((item) => {
-
-                            const isOwnQuestion =
-                                currentUser &&
-                                String(item.userId) ===
-                                    String(currentUser.id);
-
-                            const canAnswer =
-                                currentUser &&
-                                !isOwnQuestion &&
-                                currentUser.college?.toLowerCase() ===
-                                    item.college?.toLowerCase() &&
-                                currentUser.course?.toLowerCase() ===
-                                    item.course?.toLowerCase() &&
-                                Number(currentUser.year) >
-                                    Number(item.year);
-
-                            return (
-                                <article
-                                    className="question-card"
-                                    key={item._id}
-                                >
-
-                                    {/* CARD TOP */}
-                                    <div className="question-card-top">
-
-                                        <span className="guidance-category">
-                                            {item.category}
-                                        </span>
-
-                                        <span
-                                            className={`question-status ${
-                                                item.status === "Answered"
-                                                    ? "answered"
-                                                    : "unanswered"
-                                            }`}
-                                        >
-                                            {item.status === "Answered"
-                                                ? "Answered ✓"
-                                                : "Unanswered"}
-                                        </span>
-
-                                    </div>
-
-
-                                    {/* QUESTION */}
-                                    <h3 className="question-title">
-                                        {item.question}
-                                    </h3>
-
-
-                                    {/* USER INFO */}
-                                    <div className="question-author">
-
-                                        <div className="author-avatar">
-                                            {item.studentName
-                                                ?.charAt(0)
-                                                ?.toUpperCase()}
-                                        </div>
-
-                                        <div>
-                                            <strong>
-                                                {isOwnQuestion
-                                                    ? "You"
-                                                    : item.studentName}
-                                            </strong>
-
-                                            <p>
-                                                {item.course} • Year{" "}
-                                                {item.year}
-                                            </p>
-                                        </div>
-
-                                    </div>
-
-
-                                    {/* ANSWERS */}
-                                    {answers[item._id]?.length > 0 && (
-                                        <div className="answers-section">
-
-                                            <div className="answers-heading">
-                                                <span>
-                                                    Senior Answers
-                                                </span>
-
-                                                <span>
-                                                    {answers[item._id].length}
-                                                </span>
-                                            </div>
-
-
-                                            {answers[item._id].map(
-                                                (answer) => (
-                                                    <div
-                                                        className="answer-card"
-                                                        key={answer._id}
-                                                    >
-
-                                                        <div className="answer-top">
-
-                                                            <div className="answer-avatar">
-                                                                {answer.studentName
-                                                                    ?.charAt(0)
-                                                                    ?.toUpperCase()}
-                                                            </div>
-
-                                                            <div>
-                                                                <strong>
-                                                                    {
-                                                                        answer.studentName
-                                                                    }
-                                                                </strong>
-
-                                                                <p>
-                                                                    {
-                                                                        answer.course
-                                                                    }{" "}
-                                                                    • Year{" "}
-                                                                    {
-                                                                        answer.year
-                                                                    }
-                                                                </p>
-                                                            </div>
-
-                                                            <span className="senior-label">
-                                                                Senior
-                                                            </span>
-
-                                                        </div>
-
-                                                        <p className="answer-text">
-                                                            {answer.answer}
-                                                        </p>
-
-                                                    </div>
-                                                )
-                                            )}
-
-                                        </div>
-                                    )}
-
-
-                                    {/* ANSWER FORM */}
-                                    {canAnswer && (
-                                        <div className="answer-form">
-
-                                            <div className="answer-form-title">
-                                                <span>💡</span>
-                                                Help this junior
-                                            </div>
-
-                                            <textarea
-                                                placeholder="Share your experience or guidance..."
-                                                value={
-                                                    answerText[item._id] ||
-                                                    ""
-                                                }
-                                                onChange={(e) =>
-                                                    setAnswerText((prev) => ({
-                                                        ...prev,
-                                                        [item._id]:
-                                                            e.target.value
-                                                    }))
-                                                }
-                                                rows="4"
-                                            />
-
-                                            <button
-                                                onClick={() =>
-                                                    handleAnswer(item._id)
-                                                }
-                                            >
-                                                Post Guidance →
-                                            </button>
-
-                                        </div>
-                                    )}
-
-                                </article>
-                            );
-                        })}
-
-                    </div>
-                )}
-
-            </section>
-
-        </div>
+      q.question?.toLowerCase().includes(search) ||
+      q.studentName?.toLowerCase().includes(search) ||
+      q.course?.toLowerCase().includes(search)
     );
+  });
+
+  return (
+    <div className="premium-dashboard">
+      {/* Sidebar */}
+      <aside className="premium-sidebar">
+        <div className="brand">
+          <div className="brand-icon">✦</div>
+          <div>
+            <h2>
+              College<span>Connect</span>
+            </h2>
+            <small>Student Network</small>
+          </div>
+        </div>
+
+        <div className="menu-label">MAIN MENU</div>
+
+        <nav className="sidebar-menu">
+          <button className="menu-item" onClick={() => navigate("/dashboard")}>
+            <span>⌂</span>
+            Dashboard
+          </button>
+          <button className="menu-item" onClick={() => navigate("/profile")}>
+            <span>♙</span>
+            My Profile
+          </button>
+          <button className="menu-item" onClick={() => navigate("/internship")}>
+            <span>◈</span>
+            Internships
+          </button>
+          <button className="menu-item active">
+            <span>◉</span>
+            Guidance
+          </button>
+        </nav>
+
+        <div className="sidebar-bottom">
+          <button className="logout" onClick={handleLogout}>
+            <span>↪</span>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Container */}
+      <main className="premium-main">
+        {/* Top Header */}
+        <header className="top-header">
+          <div className="welcome">
+            <p className="welcome-small">PEER & SENIOR GUIDANCE</p>
+            <h1>Guidance Network</h1>
+            <p>Ask doubts to seniors and help juniors grow.</p>
+          </div>
+
+          <div className="header-actions">
+            <button
+              className="primary-btn"
+              onClick={() => setShowAskModal(true)}
+              style={{ padding: "8px 16px", fontSize: "14px" }}
+            >
+              + Ask Question
+            </button>
+
+            <div className="user-profile">
+              <div className="avatar">
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div>
+                <strong>{currentUser?.name || "Student"}</strong>
+                <small>Year {currentUser?.year || "1"}</small>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Search Bar */}
+        <section style={{ marginBottom: "20px" }}>
+          <div className="search-box" style={{ maxWidth: "450px" }}>
+            <span>⌕</span>
+            <input
+              type="text"
+              placeholder="Search guidance questions, students or topics..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </section>
+
+        {/* Questions Section */}
+        <section className="guidance-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {loading ? (
+            <div className="glass-card" style={{ textAlign: "center", padding: "40px" }}>
+              <p>Loading questions from your campus...</p>
+            </div>
+          ) : filteredQuestions.length === 0 ? (
+            <div className="glass-card" style={{ textAlign: "center", padding: "40px" }}>
+              <h3>No questions found for your college network</h3>
+              <p style={{ color: "#94a3b8", marginTop: "8px" }}>
+                Be the first to ask a question to your seniors!
+              </p>
+              <button
+                className="primary-btn"
+                style={{ marginTop: "16px" }}
+                onClick={() => setShowAskModal(true)}
+              >
+                Ask a Question Now
+              </button>
+            </div>
+          ) : (
+            filteredQuestions.map((q) => {
+              const isOwnQuestion =
+                String(q.userId) === String(currentUser?.id || currentUser?._id);
+
+              return (
+                <div key={q._id} className="glass-card guidance-card" style={{ padding: "20px" }}>
+                  {/* Card Top */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                      <div className="avatar" style={{ width: "40px", height: "40px" }}>
+                        {q.studentName ? q.studentName.charAt(0).toUpperCase() : "S"}
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: "15px" }}>{q.studentName}</strong>
+                        <p style={{ fontSize: "12px", color: "#94a3b8" }}>
+                          {q.college} • {q.course} • Year {q.year}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        padding: "4px 10px",
+                        borderRadius: "20px",
+                        background: q.status === "Answered" ? "rgba(34, 197, 94, 0.15)" : "rgba(234, 179, 8, 0.15)",
+                        color: q.status === "Answered" ? "#4ade80" : "#facc15",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {q.status || "Open"}
+                    </span>
+                  </div>
+
+                  {/* Question Content */}
+                  <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "16px", lineHeight: "1.4" }}>
+                    {q.question}
+                  </h3>
+
+                  {/* Footer Actions */}
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <button
+                      className="secondary-btn"
+                      style={{ fontSize: "13px", padding: "6px 14px" }}
+                      onClick={() => handleToggleAnswers(q._id)}
+                    >
+                      💬 Answers {answersMap[q._id] ? `(${answersMap[q._id].length})` : ""}
+                    </button>
+                  </div>
+
+                  {/* Collapsible Answers Section */}
+                  {expandedQuestionId === q._id && (
+                    <div style={{ marginTop: "18px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                      {/* Answers List */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px" }}>
+                        {!answersMap[q._id] || answersMap[q._id].length === 0 ? (
+                          <p style={{ fontSize: "13px", color: "#94a3b8", fontStyle: "italic" }}>
+                            No answers yet. Be the first to help out!
+                          </p>
+                        ) : (
+                          answersMap[q._id].map((ans, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                background: "rgba(255, 255, 255, 0.03)",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                borderLeft: "3px solid #6366f1",
+                              }}
+                            >
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                                <strong style={{ fontSize: "13px", color: "#818cf8" }}>
+                                  {ans.studentName} (Year {ans.year})
+                                </strong>
+                                <small style={{ color: "#64748b" }}>{ans.course}</small>
+                              </div>
+                              <p style={{ fontSize: "14px", color: "#e2e8f0" }}>{ans.answer}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Reply Input Box */}
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <input
+                          type="text"
+                          placeholder="Write your guidance / answer..."
+                          value={replyInputMap[q._id] || ""}
+                          onChange={(e) =>
+                            setReplyInputMap({ ...replyInputMap, [q._id]: e.target.value })
+                          }
+                          style={{
+                            flex: 1,
+                            background: "#1e2238",
+                            border: "1px solid rgba(255, 255, 255, 0.1)",
+                            borderRadius: "8px",
+                            padding: "8px 12px",
+                            color: "#fff",
+                            fontSize: "13px",
+                            outline: "none",
+                          }}
+                        />
+                        <button
+                          className="primary-btn"
+                          disabled={submittingAnswerId === q._id}
+                          onClick={() => handlePostAnswer(q._id, q)}
+                          style={{ padding: "8px 16px", fontSize: "13px" }}
+                        >
+                          {submittingAnswerId === q._id ? "Posting..." : "Reply"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </section>
+
+        {/* Ask Question Modal */}
+        {showAskModal && (
+          <div className="modal-overlay">
+            <div className="glass-card edit-modal" style={{ maxWidth: "520px" }}>
+              <h2 style={{ marginBottom: "14px" }}>Ask Your Campus Seniors</h2>
+              <p style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "16px" }}>
+                Your question will be visible to students of {currentUser?.college}.
+              </p>
+
+              <form onSubmit={handleAskQuestion}>
+                <div className="input-group">
+                  <label>Your Question</label>
+                  <textarea
+                    rows="4"
+                    placeholder="e.g. How to prepare for 3rd semester DSA exams? Which teachers to consult?"
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="modal-actions" style={{ marginTop: "20px" }}>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() => setShowAskModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="primary-btn"
+                    disabled={submittingQuestion}
+                  >
+                    {submittingQuestion ? "Posting..." : "Post Question"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
 export default Guidance;

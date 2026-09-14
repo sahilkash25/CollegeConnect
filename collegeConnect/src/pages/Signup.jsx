@@ -33,7 +33,7 @@ function Signup() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/signup", {
+      const response = await fetch("https://collegeconnect-cznd.onrender.com/api/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -185,21 +185,30 @@ function Signup() {
               </div>
 
               <div className="input-group">
-                <label>Course</label>
+  <label>Course</label>
 
-                <div className="input-wrapper">
-                  <span>🎓</span>
+  <div className="input-wrapper">
+    <span>🎓</span>
 
-                  <input
-                    type="text"
-                    name="course"
-                    placeholder="e.g. B.Tech CSE"
-                    value={formData.course}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
+    <select
+      name="course"
+      value={formData.course}
+      onChange={handleChange}
+      required
+    >
+      <option value="">Select your course</option>
+      <option value="B.Tech CSE">B.Tech CSE</option>
+      <option value="B.Tech AI/ML">B.Tech AI/ML</option>
+      <option value="B.Tech ECE">B.Tech ECE</option>
+      <option value="B.Tech ME">B.Tech Mechanical Engineering</option>
+      <option value="BCA">BCA</option>
+      <option value="BBA">BBA</option>
+      <option value="MCA">MCA</option>
+      <option value="MBA">MBA</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+</div>
 
               <div className="input-group">
                 <label>Year</label>
