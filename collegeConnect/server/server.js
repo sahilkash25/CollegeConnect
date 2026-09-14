@@ -365,17 +365,34 @@ app.get("/api/guidance", async (req, res) => {
       : [];
 
     // 2. Questions from same college
-    const otherQuestions = await Guidance.find({
-      ...(userId ? { userId: { $ne: userId } } : {}),
-      $expr: {
+    // Other questions: Same college + question ka year chhota ya barabar hona chahiye (<= currentYear)
+const otherQuestions = await Guidance.find({
+  userId: { $ne: userId },
+  $expr: {
+    $and: [
+      {
         $regexMatch: {
           input: { $ifNull: ["$college", ""] },
-          regex: escapeRegex(normalizedCollege),
+          regex: normalizedCollege,
           options: "i"
         }
+      },
+      {
+        $lte: [
+          {
+            $convert: {
+              input: "$year",
+              to: "int",
+              onError: -1,
+              onNull: -1
+            }
+          },
+          currentYear // Sirf junior aur peer ke sawal aayenge
+        ]
       }
-    }).sort({ createdAt: -1 });
-
+    ]
+  }
+}).sort({ createdAt: -1 });
     // 3. Course family matching
     const matchingQuestions = otherQuestions.filter((item) =>
       coursesMatch(course, item.course)

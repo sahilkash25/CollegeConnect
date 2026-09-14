@@ -369,9 +369,16 @@ function Guidance() {
             </div>
           ) : (
             filteredQuestions.map((q) => {
-              const isOwnQuestion =
-                String(q.userId) === String(currentUser?.id || currentUser?._id);
+            //   const isOwnQuestion =
+                // String(q.userId) === String(currentUser?.id || currentUser?._id);
 
+
+                const userYear = Number(currentUser?.year || 0);
+              const questionYear = Number(q.year || 0);
+              const isOwnQuestion = String(q.userId) === String(currentUser?.id || currentUser?._id);
+                        
+              // Sirf senior answer karega, peer sirf dekhega
+              const canAnswer = !isOwnQuestion && userYear > questionYear;
               return (
                 <div key={q._id} className="glass-card guidance-card" style={{ padding: "20px" }}>
                   {/* Card Top */}
@@ -418,69 +425,59 @@ function Guidance() {
                     </button>
                   </div>
 
-                  {/* Collapsible Answers Section */}
-                  {expandedQuestionId === q._id && (
-                    <div style={{ marginTop: "18px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                      {/* Answers List */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px" }}>
-                        {!answersMap[q._id] || answersMap[q._id].length === 0 ? (
-                          <p style={{ fontSize: "13px", color: "#94a3b8", fontStyle: "italic" }}>
-                            No answers yet. Be the first to help out!
-                          </p>
-                        ) : (
-                          answersMap[q._id].map((ans, idx) => (
-                            <div
-                              key={idx}
-                              style={{
-                                background: "rgba(255, 255, 255, 0.03)",
-                                padding: "12px",
-                                borderRadius: "8px",
-                                borderLeft: "3px solid #6366f1",
-                              }}
-                            >
-                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                                <strong style={{ fontSize: "13px", color: "#818cf8" }}>
-                                  {ans.studentName} (Year {ans.year})
-                                </strong>
-                                <small style={{ color: "#64748b" }}>{ans.course}</small>
-                              </div>
-                              <p style={{ fontSize: "14px", color: "#e2e8f0" }}>{ans.answer}</p>
-                            </div>
-                          ))
-                        )}
-                      </div>
+                 {/* Collapsible Answers Section */}
+{expandedQuestionId === q._id && (
+  <div style={{ marginTop: "18px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+    
+    {/* Answers List */}
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "16px" }}>
+      {/* answers render honge... */}
+    </div>
 
-                      {/* Reply Input Box */}
-                      <div style={{ display: "flex", gap: "10px" }}>
-                        <input
-                          type="text"
-                          placeholder="Write your guidance / answer..."
-                          value={replyInputMap[q._id] || ""}
-                          onChange={(e) =>
-                            setReplyInputMap({ ...replyInputMap, [q._id]: e.target.value })
-                          }
-                          style={{
-                            flex: 1,
-                            background: "#1e2238",
-                            border: "1px solid rgba(255, 255, 255, 0.1)",
-                            borderRadius: "8px",
-                            padding: "8px 12px",
-                            color: "#fff",
-                            fontSize: "13px",
-                            outline: "none",
-                          }}
-                        />
-                        <button
-                          className="primary-btn"
-                          disabled={submittingAnswerId === q._id}
-                          onClick={() => handlePostAnswer(q._id, q)}
-                          style={{ padding: "8px 16px", fontSize: "13px" }}
-                        >
-                          {submittingAnswerId === q._id ? "Posting..." : "Reply"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
+    {/* Reply Box Logic */}
+    {canAnswer ? (
+      <div style={{ display: "flex", gap: "10px" }}>
+        <input
+          type="text"
+          placeholder="Give senior guidance / answer..."
+          value={replyInputMap[q._id] || ""}
+          onChange={(e) =>
+            setReplyInputMap({ ...replyInputMap, [q._id]: e.target.value })
+          }
+          style={{
+            flex: 1,
+            background: "#1e2238",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            color: "#fff",
+            fontSize: "13px",
+            outline: "none",
+          }}
+        />
+        <button
+          className="primary-btn"
+          disabled={submittingAnswerId === q._id}
+          onClick={() => handlePostAnswer(q._id, q)}
+          style={{ padding: "8px 16px", fontSize: "13px" }}
+        >
+          {submittingAnswerId === q._id ? "Posting..." : "Reply"}
+        </button>
+      </div>
+    ) : isOwnQuestion ? (
+      <p style={{ fontSize: "12px", color: "#64748b", fontStyle: "italic" }}>
+        ✦ This is your question. Seniors will answer it.
+      </p>
+    ) : (
+      <div style={{ padding: "8px 12px", background: "rgba(255, 255, 255, 0.02)", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+        <span style={{ fontSize: "12px" }}>🔒</span>
+        <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+          Only seniors (Year {questionYear + 1}+) can answer this question.
+        </span>
+      </div>
+    )}
+  </div>
+)}       
                 </div>
               );
             })
